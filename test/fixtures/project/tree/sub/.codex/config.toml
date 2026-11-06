@@ -1,0 +1,3 @@
+[mcp_servers.sub-codex]
+command = "node"
+args = ["sub-codex.js"]

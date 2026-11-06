@@ -1,0 +1,3 @@
+# 非法 TOML：缺少右括号，用于验证坏文件降级
+[mcp_servers.broken
+command = "node"

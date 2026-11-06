@@ -1,0 +1,8 @@
+[mcp_servers.shared]
+command = "node"
+args = ["codex-shared.js"]
+
+[mcp_servers.codex-only]
+command = "node"
+args = ["codex-only.js"]
+cwd = "codex-work"

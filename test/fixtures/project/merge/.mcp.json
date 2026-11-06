@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "shared": {
+      "command": "node",
+      "args": ["claude-shared.js"],
+      "cwd": "./claude-work"
+    },
+    "claude-only": {
+      "command": "node",
+      "args": ["claude-only.js"]
+    }
+  }
+}

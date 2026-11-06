@@ -1,0 +1,3 @@
+[mcp_servers.root-codex]
+command = "node"
+args = ["root-codex.js"]

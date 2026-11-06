@@ -1,0 +1,25 @@
+# 项目级 Codex 声明（结构参照真实 ~/.codex/config.toml，值已脱敏）
+model = "gpt-6-astra"
+
+[mcp_servers.computer-use]
+command = "./Codex Computer Use.app/Contents/MacOS/SkyComputerUseClient"
+args = ["mcp"]
+cwd = "."
+enabled = false
+
+[mcp_servers.node_repl]
+command = "/opt/cua_node/bin/node_repl"
+args = []
+env_vars = ["BROWSER_USE_ACCESS_PIPE_PATH", "BROWSER_USE_MISSING_VAR"]
+startup_timeout_sec = 120
+tool_timeout_sec = 90
+
+  [mcp_servers.node_repl.env]
+  NODE_REPL_NODE_PATH = "/opt/cua_node/bin/node"
+  NODE_REPL_TIMEOUT_MS = "1000"
+
+[mcp_servers.sshs]
+url = "http://127.0.0.1:7333/mcp"
+
+[projects."/tmp/example-project"]
+trust_level = "trusted"

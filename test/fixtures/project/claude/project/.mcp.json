@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "fixture-stdio": {
+      "command": "node",
+      "args": ["${FIXTURE_SERVER_PATH:-./fixtures/stdio-mcp-server.js}"],
+      "env": {
+        "TOKEN": "${PROJECT_TOKEN}",
+        "MODE": "test"
+      },
+      "cwd": "./work"
+    },
+    "remote-http": {
+      "type": "http",
+      "url": "${HTTP_MCP_URL:-http://127.0.0.1:7333}/mcp",
+      "headers": {
+        "Authorization": "Bearer ${PROJECT_TOKEN}"
+      }
+    },
+    "legacy-sse": {
+      "type": "sse",
+      "url": "https://example.com/sse"
+    }
+  }
+}
