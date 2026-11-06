@@ -6,4 +6,5 @@ npm-debug.log*
 # local memory runtime artifacts (knowledge files stay tracked)
 .memory/.compact/
 .memory/.dream/
+.memory/.revisions/
 .memory/archive/
