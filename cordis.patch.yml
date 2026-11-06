@@ -1,0 +1,6 @@
+# Mount the MCP manager into the active DSH profile.
+# The bundle patch from package.json (dsh.bundle.patch) is composed before the
+# profile patch; this row instantiates the Host half of the plugin.
+- insert:
+    - id: mcp-manager
+      name: "@lixiangzhong/dsh-mcp"

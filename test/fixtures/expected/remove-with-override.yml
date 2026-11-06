@@ -1,0 +1,13 @@
+# 指向 MCP 行的 override 行必须在 remove 时一并清理。
+- insert:
+    - id: mcp-y
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: y
+        transport: stdio
+        command: node
+# 非 MCP 的顶层行不受影响。
+- id: ui-theme
+  name: '@deepseek-ai/dsh-client-ui-theme'
+  config:
+    preference: dark

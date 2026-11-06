@@ -1,0 +1,5 @@
+# 没有任何 MCP insert 行的 profile patch。
+- id: ui-theme
+  name: '@deepseek-ai/dsh-client-ui-theme'
+  config:
+    preference: dark

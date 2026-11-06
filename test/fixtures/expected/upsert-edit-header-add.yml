@@ -1,0 +1,76 @@
+# Sanitized copy of a real desktop profile patch, used as the fidelity baseline.
+# A top-level YAML array of Loader patch entries; comments and styles must
+# survive edits byte for byte.
+- id: agent-default-model
+  name: '@deepseek-ai/dsh-agent-default-model'
+  config:
+    provider: !!js ctx.get('profileContext').provider
+    model: deepseek-flash
+    reasoningEffort: max
+- id: llm-pi-ai
+  name: '@deepseek-ai/dsh-llm-pi-ai'
+  config:
+    providers:
+      newapi:
+        apiKeyEnv: NEWAPI_API_KEY
+        baseURL: http://127.0.0.1:3000/v1
+        models:
+          - id: deepseek-flash
+            contextWindow: 1000000
+            input:
+              - text
+              - image
+
+# 以下为MCP
+- insert:
+    - id: mcp-sshs
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: sshs
+        transport: streamable-http
+        url: http://127.0.0.1:7333/mcp
+        toolCallTimeoutMs: !!js 60000 * 2
+    # Google Stitch：UI 设计生成与 DESIGN.md 往返，鉴权走 X-Goog-Api-Key 请求头。
+    - id: mcp-stitch
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: stitch
+        transport: streamable-http
+        url: https://stitch.googleapis.com/mcp
+        headers:
+          X-Goog-Api-Key: fake-stitch-api-key
+          X-Goog-Project-Id: demo-project
+        toolCallTimeoutMs: 300000
+    # DBX：本地数据库 MCP（Streamable HTTP），鉴权走 Authorization 请求头。
+    - id: mcp-dbx
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: dbx
+        transport: streamable-http
+        url: http://127.0.0.1:5225/mcp
+        headers:
+          Authorization: Bearer
+            fake-dbx-bearer-token
+        toolCallTimeoutMs: 120000
+
+# chrome-devtools-mcp：Google 官方 MCP server，作为通用 stdio MCP 服务接入。
+# 用 npx 拉起 @latest，--headless 无头运行。
+- insert:
+    - id: mcp-chrome-devtools
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: chrome-devtools
+        transport: stdio
+        command: /opt/homebrew/bin/npx
+        args:
+          [
+            '-y',
+            'chrome-devtools-mcp@latest',
+            '--headless'
+          ]
+        toolCallTimeoutMs: 180000
+# 非 MCP 的顶层配置行（不应被 MCP 管理页修改）。
+- id: ui-theme-extra
+  name: '@deepseek-ai/dsh-client-ui-theme'
+  config:
+    preference: system

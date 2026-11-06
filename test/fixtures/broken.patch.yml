@@ -1,0 +1,3 @@
+# 顶层不是合法 YAML 序列，解析必须报 PARSE。
+id: oops
+config: [

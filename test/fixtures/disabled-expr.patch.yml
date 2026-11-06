@@ -1,0 +1,9 @@
+# disabled 由 !!js 表达式控制，管理页不得改写。
+- insert:
+    - id: mcp-guarded
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: guarded
+        transport: stdio
+        command: node
+      disabled: !!js ctx.opts.enableGuarded !== true

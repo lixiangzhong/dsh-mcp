@@ -1,0 +1,11 @@
+# stdio MCP row used by the transport-switch golden test.
+- insert:
+    - id: mcp-local
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: local
+        transport: streamable-http
+        toolCallTimeoutMs: 60000
+        url: http://127.0.0.1:5225/mcp
+        headers:
+          Authorization: Bearer test-token

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "MCP servers",
+    "description": "Manage global MCP servers: add, edit, enable, disable, and remove the native dsh-mcp-client rows in the active profile."
+  }
+}

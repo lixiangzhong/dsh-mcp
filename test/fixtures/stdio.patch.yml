@@ -1,0 +1,13 @@
+# stdio MCP row used by the transport-switch golden test.
+- insert:
+    - id: mcp-local
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: local
+        transport: stdio
+        command: npx
+        args:
+          - -y
+          - some-mcp
+        cwd: /tmp
+        toolCallTimeoutMs: 60000

@@ -1,0 +1,9 @@
+node_modules/
+npm-debug.log*
+.DS_Store
+*.tgz
+
+# local memory runtime artifacts (knowledge files stay tracked)
+.memory/.compact/
+.memory/.dream/
+.memory/archive/

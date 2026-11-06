@@ -1,0 +1,68 @@
+{
+  "name": "@lixiangzhong/dsh-mcp",
+  "version": "0.1.0-dev.1",
+  "description": "Manage global MCP servers from Settings: add, edit, enable, disable, and remove the native dsh-mcp-client rows.",
+  "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "lib/*.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "docs/contracts/host-api.md",
+    "docs/contracts/project-internals.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "check": "node --check index.js && node --check client.js && node --check lib/host-service.js && node --check lib/patch-doc.js && node --check lib/row-model.js && node --check lib/project-config.js && node --check lib/project-host.js",
+    "test": "node --test test/",
+    "verify": "npm run check && npm test"
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh-atomic-write": "0.2.2-rc.1",
+    "smol-toml": "^1.9.1",
+    "yaml": "^2.9.1"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-mcp-client": ">=0.2.1-rc.1 <0.3.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "dsh-bundle",
+    "deepseek-harness",
+    "mcp"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ]
+    },
+    "manifestVersion": 1
+  }
+}

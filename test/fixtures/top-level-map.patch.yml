@@ -1,0 +1,4 @@
+# 顶层是映射而不是序列，结构校验必须报 PARSE。
+id: not-a-sequence
+config:
+  preference: dark

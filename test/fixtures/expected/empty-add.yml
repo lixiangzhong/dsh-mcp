@@ -1,0 +1,8 @@
+# MCP servers managed by dsh-mcp
+- insert:
+    - id: mcp-first
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: first
+        transport: streamable-http
+        url: http://127.0.0.1:7333/mcp
