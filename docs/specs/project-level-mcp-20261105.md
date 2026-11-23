@@ -81,7 +81,7 @@
 - **挂载注册表**（Host 内存）：`Map<sessionId, { dir, mounts: Map<serverName, { fiber, phase, lastError }> }>`；`agent/disposed` 与插件卸载时全部 dispose。
 - **状态投影**（rc.1 无状态 API 的近似）：fiber state + 工具名前缀 `mcp__<name>__` 是否出现 → `starting | connected | failed`；失败原因取 fiber reject 错误。
 - **cwd 跟随**：在 `agent/pre-step` 对比会话当前目录快照；变化时置一个"待切换"，在下一步前完成（预算 2s，超时后台继续）。
-- **Host API 扩展**（在现有 `/dsh-mcp/api` 下新增 action，遵守同源 POST + `connection.requestRejection` 准入）：
+- **Host API 扩展**（在现有 `/dsh-mcp/api` 下新增 action，遵守同源 POST + 路由 `auth:'required'` 准入；本文成文时的 `connection.requestRejection` 已被 DSH ≥0.2.2-rc.2 删除）：
   - `project/session` `{ sessionId }` → `{ project: { dir, files: [{path, format}], trusted, servers: [...], global: [...] } }`
   - `project/trust` `{ dir, trusted }` → `{ trusted }`
   - `project/toggle` `{ sessionId, serverName, enabled }` → 更新 trust.json 的 per-server 意愿，并对当前会话立即生效

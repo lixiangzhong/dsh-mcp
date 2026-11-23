@@ -6,7 +6,7 @@
 
 - 基址：同源 `POST /dsh-mcp/api/<action>`（Web GUI 页面内直接 `fetch`，无需 URL 前缀）。
 - 请求：`Content-Type: application/json`，body ≤ 1 MiB。
-- 鉴权：Host 用 `ctx.connection.requestRejection(req) === undefined` 判定；不通过返回 HTTP 403 + `{ ok:false, error:{ code:'FORBIDDEN', message } }`。
+- 鉴权：路由以 `webServer.register({ auth: 'required' })` 声明准入，由 DSH 的 WebServer 完成 Host/Origin 与凭据校验后才进入 handler，并把准入的 `Peer` 作为第三个参数传入；handler 再校验 `peer` 存在，缺失时返回 HTTP 403 + `{ ok:false, error:{ code:'FORBIDDEN', message } }`。（DSH ≥ 0.2.2-rc.2：`connection.requestRejection` 已删除。）
 - 非 POST / 非 JSON / 超大 body：HTTP 400 同 envelope。
 - 业务错误一律 HTTP 200 + `{ ok:false, error }`（鉴权与协议错误除外，便于调试）。
 - 成功：`{ ok:true, data:<payload> }`。
@@ -204,7 +204,11 @@ export function maskConfig(config) // -> { transport, command, args, cwd, env, u
 /** 校验 upsert 输入（serverName/transport 互斥字段/数值范围）；失败抛 ValidationError{field,message}。 */
 export function validateRowInput(input) // -> void
 
-/** 把 UI 输入与既有 config 合并成写盘 config（解析 SECRET_KEEP、剔除 null、保证 transport 字段）。 */
+/**
+ * 把 UI 输入与既有 config 合并成写盘 config（解析 SECRET_KEEP、剔除 null、保证 transport 字段）。
+ * 面板不建模的既有键（上游新增字段，如 oauth/toolLoading/startupTimeoutMs）在 transport
+ * 未变更时原样透传，避免 patch-doc 的最小 diff 把未建模键当作待删除项；transport 变更时丢弃。
+ */
 export function buildConfig(input, existingConfig) // -> object
 
 /** 由 serverName 生成唯一行 id。 */

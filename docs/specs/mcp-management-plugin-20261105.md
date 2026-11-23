@@ -105,7 +105,7 @@
 ```
 dsh-mcp/
   package.json                 # name: @lixiangzhong/dsh-mcp; dsh.bundle.patch + dsh.client
-  cordis.patch.yml             # 插入本插件 Host 行（id: mcp-manager）
+  cordis.patch.yml             # 插入本插件 Host 行（id: dsh-mcp-manager；不可用 mcp-manager，会挤掉 DSH 原生行）
   index.js                     # Host 入口：服务 + 写盘管线 + 状态聚合
   client.js                    # Client 入口：注册 settings.section(id: mcp)
   locale/{en,zh}.json          # 显示元数据与 UI 文案

@@ -137,7 +137,7 @@ export function applyProjectRuntime(ctx, options = {})
 
 ## 3. Host API 扩展（Lead 在 host-service 实现）
 
-沿用 `/dsh-mcp/api` 前缀、同源 POST、`ctx.connection.requestRejection` 准入、`{ok:true,data}` / `{ok:false,error}` envelope。
+沿用 `/dsh-mcp/api` 前缀、同源 POST、`webServer.register({ auth:'required' })` 准入（DSH ≥ 0.2.2-rc.2 的 WebServer 策略，取代已删除的 `ctx.connection.requestRejection`）、`{ok:true,data}` / `{ok:false,error}` envelope。
 
 | action | 请求 | 响应 data |
 |---|---|---|
