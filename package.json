@@ -1,6 +1,6 @@
 {
   "name": "@lixiangzhong/dsh-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Manage global MCP servers from Settings: add, edit, enable, disable, and remove the native dsh-mcp-client rows.",
   "author": "lixiangzhong",
   "repository": {
