@@ -97,37 +97,61 @@ async function makeHarness(options = {}) {
   await writeFile(patchPath, options.text ?? SAMPLE_PATCH, 'utf8')
   const routes = []
   const listeners = new Map()
+  const disposers = []
   const entries = options.entries ?? []
   const ctx = {
     profileContext: { dir, patchPath },
     loader: { entries: () => entries },
     tools: { schemas: () => TOOL_SCHEMAS },
     webServer: {
+      // 与上游 @deepseek-ai/dsh-host-webserver 同语义：重复 (kind, path) 直接抛错。
       register: (route) => {
+        if (routes.some((live) => live.kind === route.kind && live.path === route.path)) {
+          throw new Error(`webserver: duplicate ${route.kind} route "${route.path}"`)
+        }
         routes.push(route)
-        return () => {}
+        return () => {
+          const index = routes.indexOf(route)
+          if (index !== -1) routes.splice(index, 1)
+        }
       },
     },
     effect: (factory) => {
-      const disposer = factory()
-      return typeof disposer === 'function' ? disposer : () => {}
+      const registered = factory()
+      const dispose = typeof registered === 'function' ? registered : () => {}
+      disposers.push(dispose)
+      return dispose
     },
     on: (name, listener) => {
       listeners.set(name, listener)
-      return () => listeners.delete(name)
+      const dispose = () => listeners.delete(name)
+      disposers.push(dispose)
+      return dispose
     },
     logger: { warn: () => {} },
     get: () => undefined,
   }
-  applyMcpManager(ctx, undefined, options.projectRuntime)
+  // 一次 apply；热重载测试会复用它模拟 dispose → apply。
+  const mount = () => {
+    applyMcpManager(ctx, undefined, options.projectRuntime)
+    const mounted = routes[routes.length - 1]
+    assert.ok(mounted !== undefined, 'the plugin registers the API route')
+    return mounted
+  }
+  const route = mount()
   assert.equal(routes.length, 1, 'the plugin registers exactly one API route')
-  const route = routes[0]
   const handler = route.handler
 
   return {
     dir,
     patchPath,
     route,
+    mount,
+    routeCount: () => routes.length,
+    /** 模拟 fiber dispose：按 LIFO 依次执行已登记的清理函数。 */
+    disposeEffects() {
+      while (disposers.length > 0) disposers.pop()()
+    },
     /**
      * Invoke one API action and resolve its JSON payload.
      * @param {string} action Action name.
@@ -195,6 +219,19 @@ test('API route is admitted by the WebServer auth policy, not by the Connection 
     const refused = await harness.call('list', {}, { peer: undefined })
     assert.equal(refused.ok, false)
     assert.equal(refused.error.code, 'FORBIDDEN')
+  } finally {
+    await harness.dispose()
+  }
+})
+
+test('热重载：dispose 后重新 apply 不重复注册，未释放则被上游拒绝', async () => {
+  const harness = await makeHarness()
+  try {
+    harness.disposeEffects()
+    assert.equal(harness.routeCount(), 0, '释放后路由应被摘除')
+    assert.doesNotThrow(() => harness.mount(), 'dispose → apply 必须能重复注册同一 prefix 路由')
+    assert.equal(harness.routeCount(), 1)
+    assert.throws(() => harness.mount(), /duplicate prefix route/, '未释放就再 apply 时上游拒绝，证明唯一性由 fiber 生命周期保证')
   } finally {
     await harness.dispose()
   }
