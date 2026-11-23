@@ -41,6 +41,13 @@ jobs:
       - name: Ensure a Trusted-Publishing-capable npm
         run: npm install --global npm@latest
 
+      # 测试要 import yaml / smol-toml / @deepseek-ai/dsh-atomic-write，必须装依赖。
+      # --legacy-peer-deps：@deepseek-ai/dsh-mcp-client 与 cordis 由宿主运行时提供，
+      # 不在这里安装（与 profile 侧 pnpm 的 autoInstallPeers=false 一致），否则 npm
+      # 会按 peer 自动装一份宿主包并与 lockfile 的解析结果冲突（ERESOLVE）。
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps --no-audit --no-fund
+
       - name: Check the tag matches package.json
         if: startsWith(github.ref, 'refs/tags/')
         run: |

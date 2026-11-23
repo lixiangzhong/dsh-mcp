@@ -33,7 +33,7 @@
   ],
   "scripts": {
     "check": "node --check index.js && node --check client.js && node --check lib/host-service.js && node --check lib/patch-doc.js && node --check lib/row-model.js && node --check lib/project-config.js && node --check lib/project-host.js",
-    "test": "node --test test/",
+    "test": "node --test test/*.test.js",
     "verify": "npm run check && npm test"
   },
   "dependencies": {
