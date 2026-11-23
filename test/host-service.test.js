@@ -102,7 +102,6 @@ async function makeHarness(options = {}) {
     profileContext: { dir, patchPath },
     loader: { entries: () => entries },
     tools: { schemas: () => TOOL_SCHEMAS },
-    connection: { requestRejection: () => undefined },
     webServer: {
       register: (route) => {
         routes.push(route)
@@ -122,16 +121,18 @@ async function makeHarness(options = {}) {
   }
   applyMcpManager(ctx, undefined, options.projectRuntime)
   assert.equal(routes.length, 1, 'the plugin registers exactly one API route')
-  const handler = routes[0].handler
+  const route = routes[0]
+  const handler = route.handler
 
   return {
     dir,
     patchPath,
+    route,
     /**
      * Invoke one API action and resolve its JSON payload.
      * @param {string} action Action name.
      * @param {object} [body] JSON body.
-     * @param {{ anchor?: number }} [opts] Options.
+     * @param {{ anchor?: number, peer?: object | undefined }} [opts] Options.
      * @returns {Promise<object>} Parsed response envelope.
      */
     async call(action, body = {}, opts = {}) {
@@ -169,7 +170,9 @@ async function makeHarness(options = {}) {
           }, anchor)
           reloadPoll.unref?.()
         }
-        handler(req, res)
+        // WebServer passes the admitted Peer; tests may withhold it to prove the
+        // handler refuses an unauthenticated caller on its own.
+        handler(req, res, 'peer' in opts ? opts.peer : { id: 'test-peer' })
       })
     },
     readPatch() {
@@ -180,6 +183,22 @@ async function makeHarness(options = {}) {
     },
   }
 }
+
+test('API route is admitted by the WebServer auth policy, not by the Connection service', async () => {
+  const harness = await makeHarness()
+  try {
+    assert.equal(harness.route.kind, 'prefix')
+    assert.equal(harness.route.path, '/dsh-mcp/api')
+    assert.equal(harness.route.auth, 'required', 'the route must require an authenticated Peer')
+    const admitted = await harness.call('list')
+    assert.equal(admitted.ok, true)
+    const refused = await harness.call('list', {}, { peer: undefined })
+    assert.equal(refused.ok, false)
+    assert.equal(refused.error.code, 'FORBIDDEN')
+  } finally {
+    await harness.dispose()
+  }
+})
 
 test('list projects managed rows, masks secrets and reports the revision', async () => {
   const liveEntry = (id, config) => ({
@@ -316,6 +335,50 @@ test('editing one field and reverting it restores the document byte for byte', a
     assert.equal(reverted.ok, true, JSON.stringify(reverted.error))
     const restored = await harness.readPatch()
     assert.equal(restored, before, 'reverting the field must restore the original bytes')
+  } finally {
+    await harness.dispose()
+  }
+})
+
+test('保存时不删除面板未建模的 config 字段（上游新增键）', async () => {
+  const text = `- insert:
+    - id: mcp-oauth
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: oauthsrv
+        transport: streamable-http
+        url: http://127.0.0.1:9000/mcp
+        oauth:
+          credentialKey: mcp-client/oauthsrv
+          scope: mcp:read
+        toolLoading: on-demand
+`
+  const harness = await makeHarness({ text })
+  try {
+    let list = await harness.call('list')
+    const row = list.data.rows[0]
+    const edited = await harness.call('upsert', {
+      baseRevision: list.data.revision,
+      originalId: row.id,
+      row: { serverName: 'oauthsrv', transport: 'streamable-http', url: 'http://127.0.0.1:9100/mcp', enabled: true },
+    })
+    assert.equal(edited.ok, true, JSON.stringify(edited.error))
+    const after = rowBlock(await harness.readPatch(), row.id)
+    assert.match(after, /url: http:\/\/127\.0\.0\.1:9100\/mcp/)
+    assert.match(after, /credentialKey: mcp-client\/oauthsrv/)
+    assert.match(after, /scope: mcp:read/)
+    assert.match(after, /toolLoading: on-demand/)
+
+    list = await harness.call('list')
+    const switched = await harness.call('upsert', {
+      baseRevision: list.data.revision,
+      originalId: row.id,
+      row: { serverName: 'oauthsrv', transport: 'stdio', command: 'node', enabled: true },
+    })
+    assert.equal(switched.ok, true, JSON.stringify(switched.error))
+    const switchedText = rowBlock(await harness.readPatch(), row.id)
+    assert.doesNotMatch(switchedText, /oauth:/, 'transport 变更时按既有语义丢弃未建模字段')
+    assert.doesNotMatch(switchedText, /toolLoading/)
   } finally {
     await harness.dispose()
   }

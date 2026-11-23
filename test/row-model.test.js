@@ -418,6 +418,86 @@ test('buildConfig：MASK 回写被拒绝（只接受 SECRET_KEEP）', () => {
   )
 })
 
+test('buildConfig：未建模字段在 transport 不变时原样透传', () => {
+  const oauth = { credentialKey: 'mcp-client/stitch', scope: 'mcp:read' }
+  const existingConfig = {
+    serverName: 'stitch',
+    transport: 'streamable-http',
+    url: 'https://stitch.googleapis.com/mcp',
+    headers: { Authorization: 'Bearer old' },
+    oauth,
+    toolLoading: 'on-demand',
+    startupTimeoutMs: 5000,
+    catalogDescriptionMaxLength: 240,
+  }
+  const config = buildConfig(
+    {
+      serverName: 'stitch',
+      transport: 'streamable-http',
+      url: 'https://stitch.googleapis.com/mcp',
+      headers: { Authorization: 'Bearer new' },
+    },
+    existingConfig,
+  )
+
+  assert.deepEqual(config, {
+    serverName: 'stitch',
+    transport: 'streamable-http',
+    url: 'https://stitch.googleapis.com/mcp',
+    headers: { Authorization: 'Bearer new' },
+    oauth,
+    toolLoading: 'on-demand',
+    startupTimeoutMs: 5000,
+    catalogDescriptionMaxLength: 240,
+  })
+  assert.notEqual(config.oauth, oauth, '透传的未建模字段必须深拷贝，不与既有 config 共享引用')
+})
+
+test('buildConfig：未建模字段保留 !!js 表达式标记', () => {
+  const config = buildConfig(
+    { serverName: 'x', transport: 'stdio', command: 'node' },
+    {
+      serverName: 'x',
+      transport: 'stdio',
+      command: 'node',
+      toolLoading: 'on-demand',
+      oauth: expr('process.env.OAUTH_SPEC'),
+    },
+  )
+
+  assert.deepEqual(config.oauth, expr('process.env.OAUTH_SPEC'))
+  assert.equal(config.toolLoading, 'on-demand')
+})
+
+test('buildConfig：transport 变更时丢弃未建模字段', () => {
+  const config = buildConfig(
+    { serverName: 'x', transport: 'stdio', command: 'node', args: ['server.js'] },
+    {
+      serverName: 'x',
+      transport: 'streamable-http',
+      url: 'http://a/mcp',
+      oauth: { credentialKey: 'mcp-client/x' },
+      toolLoading: 'on-demand',
+    },
+  )
+
+  assert.deepEqual(config, {
+    serverName: 'x',
+    transport: 'stdio',
+    command: 'node',
+    args: ['server.js'],
+  })
+})
+
+test('buildConfig：新增行不携带未建模字段', () => {
+  const config = buildConfig(
+    { serverName: 'fresh', transport: 'streamable-http', url: 'http://b/mcp' },
+    null,
+  )
+
+  assert.deepEqual(config, { serverName: 'fresh', transport: 'streamable-http', url: 'http://b/mcp' })
+})
+
 test('buildConfig：transport 切换剔除不适用字段', () => {
   const existingStdio = {
     serverName: 'x',

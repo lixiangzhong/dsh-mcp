@@ -10,7 +10,10 @@
 import { applyMcpManager } from './lib/host-service.js'
 import { applyProjectRuntime } from './lib/project-host.js'
 
-export const inject = ['loader', 'profileContext', 'tools', 'webServer', 'connection']
+// `connection` is deliberately absent: DSH ≥ 0.2.2-rc.2 admits the API route
+// through the WebServer `auth` policy, so the Host half no longer calls into
+// the Connection service.
+export const inject = ['loader', 'profileContext', 'tools', 'webServer']
 
 /**
  * Resolve the shipped MCP client module for project-scoped mounts. A failure
