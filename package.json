@@ -2,6 +2,15 @@
   "name": "@lixiangzhong/dsh-mcp",
   "version": "0.1.0",
   "description": "Manage global MCP servers from Settings: add, edit, enable, disable, and remove the native dsh-mcp-client rows.",
+  "author": "lixiangzhong",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lixiangzhong/dsh-mcp.git"
+  },
+  "homepage": "https://github.com/lixiangzhong/dsh-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/lixiangzhong/dsh-mcp/issues"
+  },
   "type": "module",
   "exports": {
     ".": "./index.js",
